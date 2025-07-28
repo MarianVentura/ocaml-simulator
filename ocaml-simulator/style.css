@@ -1,0 +1,242 @@
+/* Base claro */
+body {
+  background-color: #f5f7fa;
+  font-family: 'Inter', sans-serif; /* Usar Inter como en el HTML para consistencia */
+  padding: 30px;
+  color: #222831;
+  /* La transición de color la manejaremos principalmente con Tailwind en el body del HTML */
+}
+
+h1 {
+  text-align: center;
+  color: #30475e;
+  /* La transición de color la manejaremos principalmente con Tailwind en el header del HTML */
+}
+
+textarea {
+  width: 100%;
+  height: 200px;
+  font-family: 'Fira Code', monospace; /* Usar Fira Code como en el HTML para consistencia */
+  font-size: 16px;
+  padding: 12px 14px;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #ffffff;
+  color: #222831;
+  /* La transición de color la manejaremos principalmente con Tailwind */
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #0077b6;
+  box-shadow: 0 0 8px #0077b6;
+}
+
+/* Placeholder styling for light mode */
+textarea::placeholder {
+  color: var(--input-placeholder-light);
+}
+textarea::-webkit-input-placeholder { /* Chrome, Safari, Edge, Opera */
+  color: var(--input-placeholder-light);
+}
+textarea:-ms-input-placeholder { /* IE 10-11 */
+  color: var(--input-placeholder-light);
+}
+
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 12px 18px;
+  font-size: 16px;
+  border: none;
+  background-color: #0077b6;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 3px 6px rgba(0,119,182,0.3);
+}
+
+button:disabled {
+  background-color: #a1aab0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+button:hover:not(:disabled) {
+  background-color: #023e8a;
+  box-shadow: 0 5px 10px rgba(2,62,138,0.6);
+}
+
+#output {
+  background-color: #e9ecef;
+  padding: 18px;
+  border-radius: 8px;
+  min-height: 100px;
+  color: #222831;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+  /* La transición de color la manejaremos principalmente con Tailwind */
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Fira Code', monospace;
+}
+
+/* Modo oscuro - Ahora con el prefijo .dark */
+.dark body {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark h1 {
+  color: #82cfff;
+}
+
+.dark textarea {
+  background-color: #1e1e1e;
+  border-color: #3a3a3a;
+  color: #e0e0e0;
+  box-shadow: inset 0 0 8px rgba(255,255,255,0.05);
+}
+
+.dark textarea:focus {
+  border-color: #339af0;
+  box-shadow: 0 0 10px #339af0;
+}
+
+/* Placeholder styling for dark mode */
+.dark textarea::placeholder {
+  color: var(--input-placeholder-dark);
+}
+.dark textarea::-webkit-input-placeholder { /* Chrome, Safari, Edge, Opera */
+  color: var(--input-placeholder-dark);
+}
+.dark textarea:-ms-input-placeholder { /* IE 10-11 */
+  color: var(--input-placeholder-dark);
+}
+
+.dark button {
+  background-color: #339af0;
+  box-shadow: 0 3px 6px rgba(51,154,240,0.4);
+  color: white;
+}
+
+.dark button:hover:not(:disabled) {
+  background-color: #228be6;
+  box-shadow: 0 5px 12px rgba(34,139,230,0.7);
+}
+
+.dark #output {
+  background-color: #212529;
+  color: #e0e0e0;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+}
+
+/* Tooltips */
+.tooltip {
+  position: relative;
+  cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: max-content;
+  max-width: 200px;
+  background-color: #212529;
+  color: #f8f9fa;
+  text-align: center;
+  border-radius: 6px;
+  padding: 6px 10px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%; /* Ajusta según necesites */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+.tooltip:hover .tooltiptext,
+.tooltip:focus-within .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+#lineNumbers {
+  user-select: none;
+  padding: 16px 12px;
+  background-color: #f0f0f0; /* Claro */
+  color: #666666;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: right;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  overflow: hidden;
+white-space: pre-wrap;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+/* Ocultar scrollbar en los números */
+#lineNumbers::-webkit-scrollbar {
+  display: none;
+}
+
+/* Flex container para alinear textarea y números juntos */
+.flex {
+  display: flex;
+}
+
+.flex #lineNumbers,
+.flex #codeInput {
+  height: 384px; /* Igual que h-96 (24rem) */
+  overflow-y: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Estilos textarea para que no duplique borde y quede junto */
+#codeInput {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-left: none;
+  resize: none;
+}
+
+/* Scrollbar personalizado para textarea */
+#codeInput::-webkit-scrollbar {
+  width: 8px;
+}
+
+#codeInput::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+/* Modo oscuro */
+.dark #lineNumbers {
+  background-color: #1e1e1e;
+  color: #999999;
+  border-color: #3a3a3a;
+}
+
+.dark #codeInput::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.2);
+}
+

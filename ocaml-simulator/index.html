@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador OCaml</title>
+
+    <script>
+      // Tailwind CSS configuration for dark mode
+      tailwind = {
+        config: {
+          darkMode: 'class',
+        },
+      };
+    </script>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter for UI text, Fira Code for code -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Link to your style.css -->
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* Custom scrollbar for better aesthetics */
+      /* For Webkit browsers (Chrome, Safari) */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1; /* Light mode track */
+        border-radius: 10px;
+      }
+      .dark ::-webkit-scrollbar-track {
+        background: #333; /* Dark mode track */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #888; /* Light mode thumb */
+        border-radius: 10px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #555; /* Dark mode thumb */
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555; /* Light mode thumb hover */
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #777; /* Dark mode thumb hover */
+      }
+    </style>
+  </head>
+
+  <!-- Body now relies on style.css for base colors, but keeps Tailwind transitions -->
+  <body class="min-h-screen transition-colors duration-300">
+    <!-- Header Section -->
+    <header
+      class="sticky top-0 z-10 shadow-lg flex justify-between items-center px-4 py-3 rounded-b-xl transition-colors duration-300"
+      style="background-color: var(--header-bg-light); color: var(--header-text-light);"
+    >
+      <h1 class="text-2xl font-bold">🧠 Simulador de OCaml</h1>
+
+      <div class="space-x-4 flex items-center">
+        <!-- Theme Toggle Button with Tooltip -->
+        <div class="relative group">
+          <button
+            id="themeToggleBtn"
+            aria-label="Toggle Dark Mode"
+            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 text-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            onclick="toggleDarkMode()"
+          >
+            🌙
+          </button>
+          <span
+            id="themeTooltip"
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+          >
+            Cambiar a modo claro
+          </span>
+        </div>
+
+        <!-- Help Button with Tooltip -->
+        <div class="relative group">
+          <button
+            onclick="toggleHelp()"
+            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 text-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            aria-label="Help"
+          >
+            ❓
+          </button>
+          <span
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+          >
+            Mostrar ayuda e instrucciones
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Help Modal -->
+    <div
+      id="helpModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4"
+    >
+      <div
+        class="p-8 rounded-xl shadow-2xl max-w-md w-full text-center transform scale-95 opacity-0 transition-all duration-300 ease-out"
+        id="helpModalContent"
+        style="background-color: var(--modal-bg-light); color: var(--modal-text-light);"
+      >
+        <h2 class="text-2xl font-extrabold mb-4 flex items-center justify-center">
+          <span class="mr-2 text-purple-500">ℹ️</span> Acerca del Simulador
+        </h2>
+        <p class="mb-4 leading-relaxed">
+          Este simulador interpreta código OCaml con análisis léxico,
+          sintáctico y semántico. Es una herramienta educativa para explorar
+          cómo un compilador procesa el código.
+        </p>
+        <p class="mb-2 font-semibold">Ejemplo de uso:</p>
+        <pre
+          class="p-4 rounded-lg text-sm font-mono text-left overflow-auto mb-6 border"
+          style="background-color: var(--code-bg-light); border-color: var(--code-border-light);"
+        ><code>let x = 3 + 5;;
+let y = x * 2;;
+print_int y;;</code></pre>
+        <button
+          onclick="toggleHelp()"
+          class="mt-4 bg-purple-600 text-white px-6 py-3 rounded-full hover:bg-purple-700 transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 active:scale-95"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+      <!-- Code Input Section -->
+      <section class="md:w-1/2 w-full">
+        <div
+          class="rounded-xl shadow-lg p-6 h-full flex flex-col transition-colors duration-300"
+          style="background-color: var(--section-bg-light); color: var(--section-text-light);"
+        >
+          <div class="text-base mb-4 flex items-center font-medium">
+            <span class="mr-2 text-lg">📄</span>
+            <span class="font-mono">main.ml</span>
+          </div>
+
+          <div
+            class="flex rounded-lg overflow-hidden h-96 border transition-colors duration-300"
+            style="border-color: var(--input-border-light); background-color: var(--input-bg-light);"
+          >
+            <!-- Line Numbers -->
+            <pre
+              id="lineNumbers"
+              class="select-none px-3 py-4 font-mono text-sm leading-6 text-right flex-shrink-0 transition-colors duration-300"
+              style="color: var(--line-number-text-light); background-color: var(--line-number-bg-light); border-right: 1px solid var(--line-number-border-light);"
+            ></pre>
+            <!-- Code Input Textarea -->
+            <textarea
+              id="codeInput"
+              placeholder="Escribe tu código OCaml aquí..."
+              class="flex-1 p-4 font-mono text-sm leading-6 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 bg-transparent transition-colors duration-300"
+              onscroll="syncScroll()"
+              oninput="updateLineNumbers()"
+              style="color: var(--input-text-light);"
+            ></textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap justify-center gap-4 mt-8">
+            <!-- Lexical Analysis Button -->
+            <div class="relative group">
+              <button
+                onclick="runLexicalAnalysis()"
+                class="px-6 py-3 rounded-full transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 active:scale-95"
+                style="background-color: var(--button-bg-light); color: var(--button-text-light);"
+              >
+                🔍 Léxico
+              </button>
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+              >
+                Analiza los tokens del código.
+              </span>
+            </div>
+
+            <!-- Syntax Analysis Button -->
+            <div class="relative group">
+              <button
+                onclick="runSyntaxAnalysis()"
+                class="px-6 py-3 rounded-full transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 active:scale-95"
+                style="background-color: var(--button-bg-light); color: var(--button-text-light);"
+              >
+                🏗️ Sintáctico
+              </button>
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+              >
+                Verifica la estructura del código.
+              </span>
+            </div>
+
+            <!-- Semantic Analysis Button -->
+            <div class="relative group">
+              <button
+                onclick="runSemanticAnalysis()"
+                class="px-6 py-3 rounded-full transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 active:scale-95"
+                style="background-color: var(--button-bg-light); color: var(--button-text-light);"
+              >
+                🧠 Semántico
+              </button>
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+              >
+                Valida el significado lógico.
+              </span>
+            </div>
+
+            <!-- Execute Button -->
+            <div class="relative group">
+              <button
+                onclick="runInterpretation()"
+                class="px-6 py-3 rounded-full transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 active:scale-95"
+                style="background-color: var(--button-bg-light); color: var(--button-text-light);"
+              >
+                ⚙️ Ejecutar
+              </button>
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+              >
+                Interpreta y ejecuta el código.
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Output Section (Results, AST, Errors) -->
+      <section class="md:w-1/2 w-full">
+        <div
+          class="rounded-xl shadow-lg h-full flex flex-col transition-colors duration-300"
+          style="background-color: var(--section-bg-light); color: var(--section-text-light);"
+        >
+          <!-- Tab Navigation -->
+          <nav
+            class="flex border-b px-4 py-2 gap-2 transition-colors duration-300"
+            style="border-color: var(--tab-border-light);"
+          >
+            <!-- Results Tab -->
+            <div class="relative group">
+              <button
+                class="tab text-sm px-4 py-2 font-semibold border-b-2 rounded-t-lg transition-all duration-200"
+                onclick="showTab('resultText', this)"
+                style="color: var(--tab-active-text-light); border-color: var(--tab-active-border-light);"
+              >
+                🧾 Resultados
+              </button>
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+              >
+                Muestra los resultados del análisis.
+              </span>
+            </div>
+
+            <!-- AST Tab -->
+            <div class="relative group">
+              <button
+                class="tab text-sm px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg transition-all duration-200"
+                onclick="showTab('astText', this)"
+                style="color: var(--tab-inactive-text-light);"
+              >
+                🌲 AST
+              </button>
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+              >
+                Visualiza el árbol de sintaxis abstracta.
+              </span>
+            </div>
+
+            <!-- Errors Tab -->
+            <div class="relative group">
+              <button
+                class="tab text-sm px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg transition-all duration-200"
+                onclick="showTab('errorText', this)"
+                style="color: var(--tab-inactive-text-light);"
+              >
+                ⚠️ Errores
+              </button>
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+              >
+                Muestra los errores semánticos detectados.
+              </span>
+            </div>
+          </nav>
+
+          <!-- Output Content Area -->
+          <div
+            class="flex-1 p-6 rounded-b-xl overflow-auto text-sm font-mono transition-colors duration-300"
+            style="background-color: var(--output-bg-light); color: var(--output-text-light);"
+          >
+            <pre id="resultText" class="whitespace-pre-wrap break-words"
+              >Escribe código y presiona "Léxico" para comenzar...</pre
+            >
+            <pre id="astText" class="hidden whitespace-pre-wrap break-words"
+              >[AST aparecerá aquí]</pre
+            >
+            <pre id="errorText" class="hidden whitespace-pre-wrap break-words"
+              >⚠️ Por favor, presiona ‘Semántico’ para ver los errores.</pre
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- JavaScript for logic (unchanged from your original) -->
+    <script type="module" src="app.js"></script>
+    <script>
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const helpModal = document.getElementById('helpModal');
+      const helpModalContent = document.getElementById('helpModalContent');
+
+      // Define CSS variables for easier management
+      const cssVariables = {
+        '--header-bg-light': '#ffffff',
+        '--header-text-light': '#30475e',
+
+        '--modal-bg-light': '#ffffff',
+        '--modal-text-light': '#222831',
+        '--code-bg-light': '#f5f7fa',
+        '--code-border-light': '#e2e8f0',
+
+        '--section-bg-light': '#ffffff',
+        '--section-text-light': '#222831',
+        '--input-border-light': '#cbd5e0',
+        '--input-bg-light': '#f8fafc',
+        '--line-number-text-light': '#a0aec0',
+        '--line-number-bg-light': '#edf2f7',
+        '--line-number-border-light': '#e2e8f0',
+        '--input-text-light': '#2d3748',
+        '--input-placeholder-light': '#a0aec0',
+
+        '--button-bg-light': '#0077b6',
+        '--button-text-light': '#ffffff',
+
+        '--tab-border-light': '#e2e8f0',
+        '--tab-active-text-light': '#8b5cf6', // purple-600
+        '--tab-active-border-light': '#8b5cf6', // purple-600
+        '--tab-inactive-text-light': '#4a5568', // gray-600
+
+        '--output-bg-light': '#e9ecef',
+        '--output-text-light': '#222831',
+
+        // Dark mode variables
+        '--header-bg-dark': '#1f2937', // gray-800
+        '--header-text-dark': '#ffffff',
+
+        '--modal-bg-dark': '#1f2937', // gray-800
+        '--modal-text-dark': '#e0e0e0',
+        '--code-bg-dark': '#374151', // gray-700
+        '--code-border-dark': '#4b5563', // gray-600
+
+        '--section-bg-dark': '#1f2937', // gray-800
+        '--section-text-dark': '#e0e0e0',
+        '--input-border-dark': '#4b5563', // gray-700
+        '--input-bg-dark': '#374151', // gray-700
+        '--line-number-text-dark': '#9ca3af', // gray-400
+        '--line-number-bg-dark': '#374151', // gray-700
+        '--line-number-border-dark': '#4b5563', // gray-700
+        '--input-text-dark': '#e5e7eb', // gray-200
+        '--input-placeholder-dark': '#9ca3af', // gray-500
+
+        '--button-bg-dark': '#7c3aed', // purple-700
+        '--button-text-dark': '#ffffff',
+
+        '--tab-border-dark': '#4b5563', // gray-700
+        '--tab-active-text-dark': '#a78bfa', // purple-400
+        '--tab-active-border-dark': '#a78bfa', // purple-400
+        '--tab-inactive-text-dark': '#9ca3af', // gray-400
+
+        '--output-bg-dark': '#212529',
+        '--output-text-dark': '#e0e0e0',
+      };
+
+      function applyThemeVariables(isDark) {
+        const root = document.documentElement;
+        for (const [key, value] of Object.entries(cssVariables)) {
+          if (key.endsWith('-light')) {
+            const darkKey = key.replace('-light', '-dark');
+            root.style.setProperty(key, isDark ? cssVariables[darkKey] : value);
+          }
+        }
+      }
+
+      function setThemeIcon(isDark) {
+        themeToggleBtn.textContent = isDark ? '☀️' : '🌙';
+      }
+
+      function toggleDarkMode() {
+        const html = document.documentElement;
+        const isCurrentlyDark = html.classList.contains('dark');
+
+        html.classList.toggle('dark', !isCurrentlyDark);
+        localStorage.setItem('theme', isCurrentlyDark ? 'light' : 'dark');
+        setThemeIcon(!isCurrentlyDark);
+        applyThemeVariables(!isCurrentlyDark); // Apply variables based on new state
+
+        const tooltip = document.getElementById('themeTooltip');
+        if (tooltip) {
+          tooltip.textContent = isCurrentlyDark
+            ? 'Cambiar a modo oscuro'
+            : 'Cambiar a modo claro';
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isInitialDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+
+        document.documentElement.classList.toggle('dark', isInitialDark);
+        setThemeIcon(isInitialDark);
+        applyThemeVariables(isInitialDark); // Apply variables on initial load
+
+        const tooltip = document.getElementById('themeTooltip');
+        if (tooltip) {
+          tooltip.textContent = isInitialDark
+            ? 'Cambiar a modo claro'
+            : 'Cambiar a modo oscuro';
+        }
+
+        updateLineNumbers();
+        // Ensure the initial tab is correctly styled
+        const initialTabButton = document.querySelector('nav .tab');
+        if (initialTabButton) {
+            showTab('resultText', initialTabButton);
+        }
+      });
+
+      function toggleHelp() {
+        const isHidden = helpModal.classList.contains('hidden');
+        if (isHidden) {
+          helpModal.classList.remove('hidden');
+          setTimeout(() => {
+            helpModalContent.classList.remove('scale-95', 'opacity-0');
+            helpModalContent.classList.add('scale-100', 'opacity-100');
+          }, 10);
+        } else {
+          helpModalContent.classList.remove('scale-100', 'opacity-100');
+          helpModalContent.classList.add('scale-95', 'opacity-0');
+          helpModal.addEventListener(
+            'transitionend',
+            () => {
+              helpModal.classList.add('hidden');
+            },
+            { once: true }
+          );
+        }
+      }
+
+      function showTab(id, clickedButton) {
+        const tabs = ['resultText', 'astText', 'errorText'];
+        tabs.forEach((tab) => document.getElementById(tab).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+
+        const buttons = document.querySelectorAll('nav .tab');
+        buttons.forEach((btn) => {
+          btn.classList.remove(
+            'font-semibold',
+            'border-b-2'
+          );
+          // Reset inline styles for inactive tabs
+          btn.style.color = cssVariables['--tab-inactive-text-light'];
+          if (document.documentElement.classList.contains('dark')) {
+              btn.style.color = cssVariables['--tab-inactive-text-dark'];
+          }
+           btn.style.borderColor = 'transparent'; // Ensure inactive tabs have no border
+        });
+
+        if (clickedButton) {
+          clickedButton.classList.add(
+            'font-semibold',
+            'border-b-2'
+          );
+          // Set inline styles for active tab
+          clickedButton.style.color = cssVariables['--tab-active-text-light'];
+          clickedButton.style.borderColor = cssVariables['--tab-active-border-light'];
+          if (document.documentElement.classList.contains('dark')) {
+              clickedButton.style.color = cssVariables['--tab-active-text-dark'];
+              clickedButton.style.borderColor = cssVariables['--tab-active-border-dark'];
+          }
+        }
+      }
+      window.showTab = showTab;
+
+      const codeInput = document.getElementById('codeInput');
+      const lineNumbers = document.getElementById('lineNumbers');
+
+      function updateLineNumbers() {
+        const lines = codeInput.value.split('\n').length;
+        lineNumbers.textContent = Array(lines)
+          .fill(0)
+          .map((_, i) => i + 1)
+          .join('\n');
+      }
+
+      function syncScroll() {
+        lineNumbers.scrollTop = codeInput.scrollTop;
+      }
+
+      function runLexicalAnalysis() {
+        console.log('Lexical Analysis (from HTML)');
+      }
+      function runSyntaxAnalysis() {
+        console.log('Syntax Analysis (from HTML)');
+      }
+      function runSemanticAnalysis() {
+        console.log('Semantic Analysis (from HTML)');
+      }
+      function runInterpretation() {
+        console.log('Interpretation (from HTML)');
+      }
+    </script>
+  </body>
+</html>
