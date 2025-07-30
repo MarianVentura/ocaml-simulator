@@ -1,4 +1,5 @@
-/* Base claro */
+
+Base claro
 body {
   background-color: #f5f7fa;
   font-family: 'Inter', sans-serif; /* Usar Inter como en el HTML para consistencia */
@@ -240,3 +241,43 @@ white-space: pre-wrap;
   background-color: rgba(255,255,255,0.2);
 }
 
+/* Tabs base */
+.tab {
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: #222831; /* texto base modo claro */
+  background-color: transparent;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.25s ease;
+  border-radius: 0.5rem 0.5rem 0 0;
+  user-select: none;
+}
+
+/* Hover modo claro */
+body:not(.dark) .tab:hover:not(.tab-active) {
+  background-color: #d0e7ff; /* azul pastel suave */
+  color: #005f8c; /* azul oscuro hover */
+}
+
+/* Activo modo claro */
+body:not(.dark) .tab-active {
+  color: #ffffff; /* texto blanco puro */
+  border-color: #0077b6; /* azul botón */
+  font-weight: 700;
+  background-color: #0077b6; /* azul vibrante */
+}
+
+/* Hover modo oscuro */
+body.dark .tab:hover:not(.tab-active) {
+  background-color: #163a5f; /* azul oscuro hover */
+  color: #a0d8ff; /* celeste claro hover */
+}
+
+/* Activo modo oscuro */
+body.dark .tab-active {
+  color: #82cfff; /* celeste claro */
+  border-color: #0a3d62; /* azul navy */
+  font-weight: 700;
+  background-color: #0a3d62; /* azul navy profundo */
+}
