@@ -1,13 +1,21 @@
+// app.js
+
 import { analyzeLexically } from './modules/lexer.js';
 import { analyzeSyntax } from './modules/parser.js';
 import { analyzeSemantics } from './modules/semantic.js';
 import { interpret } from './modules/interpreter.js';
 
-let semanticAnalysisRun = false;
+
+const executionHistory = [];  // Aquí almacenamos las últimas ejecuciones
+const maxHistory = 5;         // Número máximo de ejecuciones guardadas
+let semanticAnalysisRun = false; // Bandera para controlar si el análisis semántico se ha ejecutado
 
 // --- Números de línea simulados ---
 const codeInput = document.getElementById('codeInput');
 const lineNumbers = document.getElementById('lineNumbers');
+const resultText = document.getElementById('resultText');
+const astText = document.getElementById('astText');
+const errorText = document.getElementById('errorText');
 
 function updateLineNumbers() {
   const lines = codeInput.value.split('\n').length;
@@ -36,8 +44,13 @@ window.runLexicalAnalysis = () => {
   const inputCode = codeInput.value;
   const tokens = analyzeLexically(inputCode);
 
-  if (!tokens.length) {
-    document.getElementById("resultText").innerHTML = `<p class="text-red-400">❌ No se encontraron tokens.</p>`;
+  if (!tokens.length && inputCode.trim() !== '') {
+    resultText.innerHTML = `<p class="text-red-400">❌ No se encontraron tokens.</p>`;
+    showTab('resultText');
+    return;
+  } else if (inputCode.trim() === '') {
+    resultText.innerHTML = `<p class="text-gray-400">Escribe código y presiona "Léxico" para comenzar...</p>`;
+    showTab('resultText');
     return;
   }
 
@@ -72,51 +85,142 @@ window.runLexicalAnalysis = () => {
     </div>
   `;
 
-  document.getElementById("resultText").innerHTML = output;
+  resultText.innerHTML = output;
+  showTab('resultText', document.querySelector('button[onclick="showTab(\'resultText\', this)"]'));
+  saveExecutionInHistory(); // Puedes decidir si guardar solo los resultados finales o cada paso
 };
 
 window.runSyntaxAnalysis = () => {
   const inputCode = codeInput.value;
-  const result = analyzeSyntax(inputCode);
+  const { ast, errors } = analyzeSyntax(inputCode); // analyzeSyntax ahora devuelve AST y errores
 
-  if (result.errors) {
-    document.getElementById("resultText").textContent = result.errors.join('\n');
+  semanticAnalysisRun = false; // Reinicia la bandera semántica
+
+  if (errors.length > 0) {
+    // Si hay errores, muéstralos en la pestaña de errores
+    errorText.innerHTML = errors
+      .map((err, i) => `<strong>Error Sintáctico ${i + 1}:</strong> ${err}`)
+      .join('<br><br>');
+    showTab('errorText', document.querySelector('button[onclick="showTab(\'errorText\', this)"]'));
+    astText.textContent = '[AST no disponible debido a errores sintácticos]'; // Limpia el AST si hay errores
+    resultText.innerHTML = `<p class="text-red-400">❌ Análisis Sintáctico: Fallido. Verifique la pestaña de Errores.</p>`;
   } else {
-    document.getElementById("resultText").textContent = "❌ Error desconocido en el análisis sintáctico.";
+    // Si no hay errores, muestra el AST en la pestaña AST y un mensaje de éxito en resultados
+    astText.textContent = JSON.stringify(ast, null, 2); // Formatea el AST para mejor lectura
+    resultText.innerHTML = `<p class="text-green-400">✅ Análisis Sintáctico: Correcto. Se ha construido el Árbol de Sintaxis Abstracta (AST).</p>`;
+    showTab('astText', document.querySelector('button[onclick="showTab(\'astText\', this)"]'));
   }
-
-  console.log("AST:", result.ast);
 };
 
 window.runSemanticAnalysis = () => {
-  const code = codeInput.value;
-  const result = analyzeSemantics(code);
+  const inputCode = codeInput.value;
+  const { ast, errors: syntaxErrors } = analyzeSyntax(inputCode);
 
-  semanticAnalysisRun = true;
-  showErrors(result);
-  showTab('errorText');
+  semanticAnalysisRun = true; // Establece la bandera para el análisis semántico
+
+  if (syntaxErrors.length > 0 || !ast) {
+    // Si hay errores sintácticos, no se puede realizar el análisis semántico
+    errorText.innerHTML = `<p class="text-red-400">❌ Análisis Semántico: No se puede realizar debido a errores sintácticos previos. Verifique la pestaña de Errores.</p>`;
+    showErrors(syntaxErrors.map(err => `Error Sintáctico: ${err}`)); // Muestra los errores sintácticos en la pestaña de errores
+    showTab('errorText', document.querySelector('button[onclick="showTab(\'errorText\', this)"]'));
+    return;
+  }
+
+  const semanticErrors = analyzeSemantics(ast); // Pasa el AST al análisis semántico
+
+  if (semanticErrors.length > 0 && !(semanticErrors.length === 1 && semanticErrors[0].includes("✅ Análisis semántico correcto"))) {
+    // Si hay errores semánticos, muéstralos
+    showErrors(semanticErrors);
+    showTab('errorText', document.querySelector('button[onclick="showTab(\'errorText\', this)"]'));
+  } else {
+    // Si no hay errores semánticos, muestra un mensaje de éxito
+    errorText.innerHTML = `<p class="text-green-400">✅ Análisis semántico correcto. ¡Variables y tipos OK!</p>`;
+    showTab('errorText', document.querySelector('button[onclick="showTab(\'errorText\', this)"]'));
+  }
 };
 
 window.runInterpretation = () => {
-  const code = codeInput.value;
-  const result = interpret(code);
-  document.getElementById('resultText').textContent = result;
+  const inputCode = codeInput.value;
+  const { ast, errors: syntaxErrors } = analyzeSyntax(inputCode);
+
+  if (syntaxErrors.length > 0 || !ast) {
+    resultText.innerHTML = `<p class="text-red-400">❌ Ejecución: No se puede ejecutar el código debido a errores sintácticos. Verifique la pestaña de Errores.</p>`;
+    showTab('resultText', document.querySelector('button[onclick="showTab(\'resultText\', this)"]'));
+    return;
+  }
+
+  const semanticErrors = analyzeSemantics(ast);
+  if (semanticErrors.length > 0 && !(semanticErrors.length === 1 && semanticErrors[0].includes("✅ Análisis semántico correcto"))) {
+    resultText.innerHTML = `<p class="text-red-400">❌ Ejecución: No se puede ejecutar el código debido a errores semánticos. Verifique la pestaña de Errores.</p>`;
+    showTab('resultText', document.querySelector('button[onclick="showTab(\'resultText\', this)"]'));
+    return;
+  }
+
+  const interpretationResult = interpret(ast); // Pasa el AST al intérprete
+  resultText.textContent = interpretationResult;
+  showTab('resultText', document.querySelector('button[onclick="showTab(\'resultText\', this)"]'));
 };
 
 function showErrors(errors) {
-  const errorText = document.getElementById('errorText');
+  // Asegúrate de que el contenedor de errores esté visible
+  const errorTextElement = document.getElementById('errorText');
 
-  if (!semanticAnalysisRun) {
-    errorText.innerHTML = "⚠️ Por favor, presiona ‘Semántico’ para ver los errores.";
+  if (!errors || errors.length === 0 || (errors.length === 1 && errors[0].includes("✅ Análisis semántico correcto"))) {
+    errorTextElement.innerHTML = "✅ No se encontraron errores.";
     return;
   }
 
-  if (!errors || errors.length === 0) {
-    errorText.innerHTML = "✅ No se encontraron errores.";
-    return;
-  }
-
-  errorText.innerHTML = errors
+  errorTextElement.innerHTML = errors
     .map((err, i) => `<strong>Error ${i + 1}:</strong> ${err}`)
     .join('<br><br>');
+}
+
+window.clearAll = () => {
+  codeInput.value = '';
+  lineNumbers.textContent = '1';
+  resultText.innerHTML = `Escribe código y presiona "Léxico" para comenzar...`;
+  astText.innerHTML = `[AST aparecerá aquí]`;
+  errorText.innerHTML = `⚠️ Por favor, presiona ‘Semántico’ para ver los errores.`;
+  semanticAnalysisRun = false; // Reinicia la bandera
+  codeInput.focus();
+  showTab('resultText', document.querySelector('button[onclick="showTab(\'resultText\', this)"]')); // Vuelve a la pestaña de resultados
+};
+
+window.showTab = (tabId, buttonElement) => {
+  const tabsContent = ['resultText', 'astText', 'errorText'];
+
+  tabsContent.forEach(id => {
+    document.getElementById(id).classList.toggle('hidden', id !== tabId);
+  });
+
+  document.querySelectorAll('button.tab').forEach(btn => {
+    btn.classList.remove('tab-active');
+    // Restablece los estilos inline para los botones inactivos
+    btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--tab-inactive-text-light');
+    btn.style.borderColor = 'transparent';
+    if (document.documentElement.classList.contains('dark')) {
+      btn.style.color = getComputedStyle(document.documentElement).getPropertyValue('--tab-inactive-text-dark');
+    }
+  });
+
+  if (buttonElement) {
+    buttonElement.classList.add('tab-active');
+    // Aplica los estilos inline para el botón activo
+    buttonElement.style.color = getComputedStyle(document.documentElement).getPropertyValue('--tab-active-text-light');
+    buttonElement.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--tab-active-border-light');
+    if (document.documentElement.classList.contains('dark')) {
+      buttonElement.style.color = getComputedStyle(document.documentElement).getPropertyValue('--tab-active-text-dark');
+      buttonElement.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--tab-active-border-dark');
+    }
+  }
+};
+
+// Función para guardar el historial de ejecución (puedes expandirla para guardar más detalles)
+function saveExecutionInHistory() {
+  // Implementación de historial si es necesaria
+  // const currentCode = codeInput.value;
+  // executionHistory.unshift({ code: currentCode, timestamp: new Date() });
+  // if (executionHistory.length > maxHistory) {
+  //   executionHistory.pop();
+  // }
 }

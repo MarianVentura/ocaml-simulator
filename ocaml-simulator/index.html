@@ -232,6 +232,23 @@ print_int y;;</code></pre>
                 Interpreta y ejecuta el código.
               </span>
             </div>
+
+            <!-- Clear Button -->
+<div class="relative group">
+  <button
+    onclick="clearAll()"
+    class="px-6 py-3 rounded-full transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 active:scale-95"
+    style="background-color: var(--button-bg-light); color: var(--button-text-light);"
+  >
+    🧹 Limpiar
+  </button>
+  <span
+    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
+  >
+    Borra código y resultados.
+  </span>
+</div>
+
           </div>
         </div>
       </section>
@@ -249,13 +266,14 @@ print_int y;;</code></pre>
           >
             <!-- Results Tab -->
             <div class="relative group">
-              <button
-                class="tab text-sm px-4 py-2 font-semibold border-b-2 rounded-t-lg transition-all duration-200"
-                onclick="showTab('resultText', this)"
-                style="color: var(--tab-active-text-light); border-color: var(--tab-active-border-light);"
-              >
-                🧾 Resultados
-              </button>
+             <button
+  class="tab tab-active text-sm px-4 py-2 font-semibold rounded-t-lg transition-all duration-200"
+  onclick="showTab('resultText', this)"
+>
+  🧾 Resultados
+</button>
+
+
               <span
                 class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
               >
@@ -265,13 +283,13 @@ print_int y;;</code></pre>
 
             <!-- AST Tab -->
             <div class="relative group">
-              <button
-                class="tab text-sm px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg transition-all duration-200"
-                onclick="showTab('astText', this)"
-                style="color: var(--tab-inactive-text-light);"
-              >
-                🌲 AST
-              </button>
+            <button
+  class="tab text-sm px-4 py-2 rounded-t-lg transition-all duration-200"
+  onclick="showTab('astText', this)"
+>
+  🌲 AST
+</button>
+
               <span
                 class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
               >
@@ -281,19 +299,20 @@ print_int y;;</code></pre>
 
             <!-- Errors Tab -->
             <div class="relative group">
-              <button
-                class="tab text-sm px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg transition-all duration-200"
-                onclick="showTab('errorText', this)"
-                style="color: var(--tab-inactive-text-light);"
-              >
-                ⚠️ Errores
-              </button>
+             <button
+  class="tab text-sm px-4 py-2 rounded-t-lg transition-all duration-200"
+  onclick="showTab('errorText', this)"
+>
+  ⚠️ Errores
+</button>
               <span
                 class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300 bg-gray-900 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap z-10 shadow-lg"
               >
                 Muestra los errores semánticos detectados.
               </span>
             </div>
+
+            
           </nav>
 
           <!-- Output Content Area -->
@@ -311,6 +330,7 @@ print_int y;;</code></pre>
               >⚠️ Por favor, presiona ‘Semántico’ para ver los errores.</pre
             >
           </div>
+          
         </div>
       </section>
     </main>
@@ -386,6 +406,7 @@ print_int y;;</code></pre>
 
       function applyThemeVariables(isDark) {
         const root = document.documentElement;
+        // Se corrigió la sintaxis del bucle for...of para la desestructuración
         for (const [key, value] of Object.entries(cssVariables)) {
           if (key.endsWith('-light')) {
             const darkKey = key.replace('-light', '-dark');
@@ -495,6 +516,9 @@ print_int y;;</code></pre>
       }
       window.showTab = showTab;
 
+      // Note: The original HTML had duplicate functions for runLexicalAnalysis, runSyntaxAnalysis, etc.
+      // These have been removed as the app.js functions are the ones actually used.
+      // The updateLineNumbers and syncScroll functions are kept here as they directly interact with the DOM.
       const codeInput = document.getElementById('codeInput');
       const lineNumbers = document.getElementById('lineNumbers');
 
@@ -508,19 +532,6 @@ print_int y;;</code></pre>
 
       function syncScroll() {
         lineNumbers.scrollTop = codeInput.scrollTop;
-      }
-
-      function runLexicalAnalysis() {
-        console.log('Lexical Analysis (from HTML)');
-      }
-      function runSyntaxAnalysis() {
-        console.log('Syntax Analysis (from HTML)');
-      }
-      function runSemanticAnalysis() {
-        console.log('Semantic Analysis (from HTML)');
-      }
-      function runInterpretation() {
-        console.log('Interpretation (from HTML)');
       }
     </script>
   </body>
