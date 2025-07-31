@@ -1,0 +1,14 @@
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\bin\Debug\net8.0\Ocaml.exe
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\bin\Debug\net8.0\Ocaml.deps.json
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\bin\Debug\net8.0\Ocaml.runtimeconfig.json
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\bin\Debug\net8.0\Ocaml.dll
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\bin\Debug\net8.0\Ocaml.pdb
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\Ocaml.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\Ocaml.AssemblyInfoInputs.cache
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\Ocaml.AssemblyInfo.cs
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\Ocaml.csproj.CoreCompileInputs.cache
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\Ocaml.dll
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\refint\Ocaml.dll
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\Ocaml.pdb
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\Ocaml.genruntimeconfig.cache
+C:\Users\maria\Downloads\Ocaml-master\Ocaml-master\Ocaml\obj\Debug\net8.0\ref\Ocaml.dll
